@@ -307,17 +307,31 @@ export function MapView({ cities, trip, mode, onSelectCity, selectedCityId }: Pr
 
     const panel = document.querySelector<HTMLElement>("[data-city-popup]");
     const isDesktop = window.matchMedia("(min-width: 640px)").matches;
-    hadPaddingRef.current = true;
-    map.easeTo({
-      center: [city.lng, city.lat],
+    const target = {
+      center: [city.lng, city.lat] as [number, number],
       zoom: Math.max(map.getZoom(), 4),
-      padding: {
-        top: 0,
-        left: 0,
-        right: isDesktop && panel ? panel.offsetWidth : 0,
-        bottom: !isDesktop && panel ? panel.offsetHeight : 0,
-      },
       duration: 800,
+    };
+
+    if (isDesktop) {
+      hadPaddingRef.current = true;
+      map.easeTo({
+        ...target,
+        padding: { top: 0, left: 0, bottom: 0, right: panel ? panel.offsetWidth : 0 },
+      });
+      return;
+    }
+
+    // On mobile the sheet covers most of the screen, so a bottom padding that
+    // big shrinks the globe to fit the sliver left over (it renders as a small
+    // disc with a visible edge). An offset moves the pin up into the exposed
+    // strip below the header without resizing the globe.
+    const HEADER_PX = 56;
+    const sheetHeight = panel ? panel.offsetHeight : 0;
+    map.easeTo({
+      ...target,
+      padding: { top: 0, left: 0, bottom: 0, right: 0 },
+      offset: [0, (HEADER_PX - sheetHeight) / 2],
     });
   }, [selectedCityId, cities]);
 
