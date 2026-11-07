@@ -4,7 +4,7 @@ import Link from "next/link";
 export function Header() {
   return (
     <header className="fixed top-0 inset-x-0 z-30 h-14 flex items-center px-4 sm:px-6 bg-bg/95 backdrop-blur border-b border-border">
-      <Link href="/" className="flex items-center gap-2 min-w-0">
+      <Link href="/" data-nav="logo" className="flex items-center gap-2 min-w-0">
         <Image
           src="/kara/header-logo.png"
           alt=""

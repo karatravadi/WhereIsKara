@@ -99,6 +99,19 @@ export default async function AboutPage() {
         <h2 className="font-display text-[25px] mt-10 mb-3">Changelog</h2>
         <ul className="space-y-4 text-text-secondary leading-relaxed">
           <li>
+            <p className="text-text-primary font-medium">v1.5 &ndash; 7 November 2026</p>
+            <p>
+              Added anonymous usage tracking, see{" "}
+              <a
+                href="#tracking"
+                className="text-accent hover:text-accent-hover underline"
+              >
+                Tracking
+              </a>
+              .
+            </p>
+          </li>
+          <li>
             <p className="text-text-primary font-medium">v1.4 &ndash; 24 October 2026</p>
             <p>
               Removed route history from the map, with flights doubling back across the region it
@@ -165,6 +178,25 @@ export default async function AboutPage() {
         <p className="text-text-secondary leading-relaxed">
           Next.js, Supabase, Mapbox, Vercel. Designed in Figma, built with Claude Code.
         </p>
+
+        <h2 id="tracking" className="font-display text-[25px] mt-10 mb-3 scroll-mt-20">
+          Tracking
+        </h2>
+        <div className="space-y-3 text-text-secondary leading-relaxed">
+          <p>
+            I record a few anonymous actions: which pages get opened, which pins get tapped and
+            closed, whether the toggle gets used, how long a visit lasts, and what kind of device
+            it&rsquo;s on.
+          </p>
+          <p>
+            Each visit gets a random ID that&rsquo;s cleared when you close the tab. No cookies, and
+            I don&rsquo;t save your IP address.
+          </p>
+          <p>
+            The site also uses Vercel&rsquo;s standard page counts, and the map is served by
+            Mapbox, which sees your IP address like any map provider does.
+          </p>
+        </div>
 
         <p className="mt-10 text-sm text-text-muted">
           Bugs, ideas, anything -{" "}

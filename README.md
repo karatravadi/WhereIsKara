@@ -58,8 +58,9 @@ src/
   components/     grouped by feature (Map/, Admin/, About/)
   lib/            data access, status derivation, formatting
   hooks/          small client-side hooks (local clock, weather)
+scripts/          analytics smoke test and synthetic-data seeder
 supabase/         SQL migrations, numbered in the order they were run
-docs/             architecture notes and an example feature spec
+docs/             architecture notes, an example feature spec, analytics queries
 ```
 
 ## Getting started
@@ -85,6 +86,60 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Analytics
+
+The site records a few anonymous usage events so I can see what people
+actually do on it. Supabase is the source of truth; there is no third-party
+analytics service.
+
+**Events** (`src/lib/track.ts`, sent to `/api/track`):
+
+| Event | When |
+|---|---|
+| `page_view` | Any page load or route change |
+| `pin_select` | A pin is tapped (city, trip mode, current/latest, days since its last check-in, nth pin this session, ms since load) |
+| `pin_close` | The panel is closed or another pin replaces it (ms open, reason) |
+| `trip_toggle` | "26/27 travels" / "All time" switched |
+| `nav_click` | Header or footer link clicked |
+| `session_end` | Tab hidden or closed (best effort; may fire more than once) |
+
+**Schema.** One generic table, `events` (`event_name` plus a `jsonb` properties
+column), so new events need no migration. See
+[`supabase/008_events.sql`](supabase/008_events.sql). RLS is on with no policies:
+only the server-side service-role key can read or write it.
+
+**Privacy.**
+
+- The only identifier is a random id in `sessionStorage`, gone when the tab
+  closes. No cookies, no persistent id, so returning visitors can't be
+  counted.
+- No IP address or user agent is stored. The referrer is reduced to its
+  hostname.
+- Nothing is sent when the browser sends Do Not Track or Global Privacy
+  Control, from `/admin`, or from the owner's own browsers (`?notrack=1` sets
+  an opt-out flag, `?notrack=0` clears it; signed-in admin requests are dropped
+  server-side).
+- `/api/track` accepts only an allow-list of event names, small flat
+  payloads, and same-origin requests. The server, not the client, tags each
+  row with `env` so local and preview traffic is filtered out of analysis.
+
+**Analysis.** [`docs/analytics/analysis.sql`](docs/analytics/analysis.sql) has
+the queries (pin-select rate, funnel, device split and more) and notes the
+limits of each. Traffic is small, so rates are shown with their n.
+[`docs/analytics/experiment-design.md`](docs/analytics/experiment-design.md)
+covers a possible A/B test and why it is not feasible at this traffic.
+
+**Scripts** (`scripts/analytics/`, run from the repo root):
+
+```bash
+node scripts/analytics/smoke-test.mjs          # checks /api/track end to end (dev server running)
+node scripts/analytics/seed-synthetic.mjs      # fills events_synthetic with FAKE sessions
+```
+
+The synthetic table exists so the queries can be developed before real data
+arrives. Its numbers come from invented behaviour and mean nothing about real
+visitors.
 
 ## What's not done yet
 
